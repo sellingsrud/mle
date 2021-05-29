@@ -2,11 +2,24 @@ from mle import __version__
 import mle.classifiers as melc
 import pytest
 import numpy as np
+import pandas as pd
 from math import isclose
+from sklearn import datasets
 
 
 def test_version():
     assert __version__ == "0.1.0"
+
+
+@pytest.fixture
+def iris():
+    iris = datasets.load_iris()
+    names = ["Class"] + iris.feature_names
+    targets = iris.target.reshape(len(iris.data), 1)
+    df = pd.DataFrame(np.hstack((targets, iris.data)), columns=names)
+    df = df[df.Class <= 1]
+    df.Class = df.Class.apply(lambda x: 1 if x == 0.0 else -1)
+    return df
 
 
 @pytest.fixture
@@ -61,3 +74,8 @@ class TestPerceptron:
         p = melc.Perceptron(**params)
         assert p.phi(*wx) == 1
         assert p.phi(*wx_n) == -1
+
+    def test_iris(self, iris):
+        p = melc.Perceptron(eta=0.01, N=25)
+        p.fit(iris.drop("Class", axis=1).to_numpy(), iris.Class.to_numpy())
+        assert p.errors[-1] == 0

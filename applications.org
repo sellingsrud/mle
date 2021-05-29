@@ -1,0 +1,33 @@
+#+TITLE: Applications
+
+* Perceptron example
+
+#+begin_src jupyter-python :session applications
+import importlib
+import pandas as pd
+import numpy as np
+from sklearn import datasets
+
+import mle.classifiers as melc
+#+end_src
+
+#+RESULTS:
+
+#+begin_src jupyter-python :session applications :async yes
+importlib.reload(melc)
+
+iris = datasets.load_iris()
+names = ["Class"] + iris.feature_names
+df = pd.DataFrame(np.hstack((iris.target.reshape(len(iris.data), 1), iris.data)), columns = names)
+df = df[df.Class <= 1]
+df.Class = df.Class.apply(lambda x: 1 if x == 0.0 else -1)
+
+p = melc.Perceptron(eta = 0.01, N = 25)
+p.fit(df.drop("Class", axis = 1).to_numpy(), df.Class.to_numpy())
+print(p.w)
+print(p.errors)
+#+end_src
+
+#+RESULTS:
+: [ 0.94856496  1.88633067  5.25634093 -7.11293    -3.05548041]
+: [50, 50, 50, 50, 50, 50, 50, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
